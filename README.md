@@ -42,13 +42,19 @@ The project supports two modes of control:
 
 ### 3.3 Switching Between Modes
 
-The display sends a control packet to toggle between **Display control** or **Potentiometer control** 
+The display sends a control packet to toggle between **Display control** or **Potentiometer control**.
 
 ### 3.4 Power Supply
 
 - The Arduino can be powered via USB (5V) or an external power supply.
 
-## 4. Functionality Explanation
+## 4. Schematic Circuit
+
+Below is the schematic circuit for the Servo Motor demo:
+
+![Servo Motor Schematic](schematic-circuit/servo-motor-schematic-circuit.svg)
+
+## 5. Functionality Explanation
 
 1. **Real-Time Communication**:
    - The display uses the Lumen Protocol to send and receive packets with the Arduino.
@@ -58,15 +64,13 @@ The display sends a control packet to toggle between **Display control** or **Po
    - In display-controlled mode, the servo moves to the angle specified by the display.
    - In potentiometer-controlled mode, the servo's angle is determined by the potentiometer's position.
 
-## 5. Code Overview
+## 6. Code Overview
 
 ### Key Features:
 - **Lumen Protocol**: Handles serial communication between the display and Arduino.
 - **Servo Control**: Adjusts the servo's position based on packets or potentiometer input.
-- 
 
 ```cpp
-
 #include "LumenProtocol.h"
 #include <Servo.h>
 
