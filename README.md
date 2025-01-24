@@ -71,6 +71,7 @@ Below is the schematic circuit for the Servo Motor demo:
 - **Servo Control**: Adjusts the servo's position based on packets or potentiometer input.
 
 ```cpp
+
     #include "LumenProtocol.h"
     #include <Servo.h>
 
