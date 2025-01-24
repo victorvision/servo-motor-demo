@@ -71,85 +71,85 @@ Below is the schematic circuit for the Servo Motor demo:
 - **Servo Control**: Adjusts the servo's position based on packets or potentiometer input.
 
 ```cpp
-#include "LumenProtocol.h"
-#include <Servo.h>
+    #include "LumenProtocol.h"
+    #include <Servo.h>
 
-extern "C" void lumen_write_bytes(uint8_t *data, uint32_t length) {
-  Serial.write(data, length);
-}
+    extern "C" void lumen_write_bytes(uint8_t *data, uint32_t length) {
+      Serial.write(data, length);
+    }
 
-extern "C" uint16_t lumen_get_byte() {
-  if (Serial.available()) {
-    return Serial.read();
-  }
-  return DATA_NULL;
-}
+    extern "C" uint16_t lumen_get_byte() {
+      if (Serial.available()) {
+        return Serial.read();
+      }
+      return DATA_NULL;
+    }
 
-#define LCM_BAUDRATE 115200
+    #define LCM_BAUDRATE 115200
 
-Servo ServoMotor;
+    Servo ServoMotor;
 
-const int SERVO_PIN = 9;    
-const int ANALOG_PIN = A0;  
+    const int SERVO_PIN = 9;    
+    const int ANALOG_PIN = A0;  
 
-const uint16_t CURRENT_ANGLE_ADDRESS = 147;
-const uint16_t CONTROL_DEVICE_SELECTOR_ADDRESS = 148;
+    const uint16_t CURRENT_ANGLE_ADDRESS = 147;
+    const uint16_t CONTROL_DEVICE_SELECTOR_ADDRESS = 148;
 
-lumen_packet_t currentAnglePacket = { CURRENT_ANGLE_ADDRESS, kS16 };
-lumen_packet_t controlDeviceSelectorPacket = { CONTROL_DEVICE_SELECTOR_ADDRESS, kBool };
-lumen_packet_t *currentPacket;
+    lumen_packet_t currentAnglePacket = { CURRENT_ANGLE_ADDRESS, kS16 };
+    lumen_packet_t controlDeviceSelectorPacket = { CONTROL_DEVICE_SELECTOR_ADDRESS, kBool };
+    lumen_packet_t *currentPacket;
 
-int positionSetpoint = 0;    
-int basePosition = 0;        
-bool updatePosition = false; 
-bool controlSelect = false;  
+    int positionSetpoint = 0;    
+    int basePosition = 0;        
+    bool updatePosition = false; 
+    bool controlSelect = false;  
 
-void sendServoPosition(int angle) {
-  lumen_packet_t anglePacket = { CURRENT_ANGLE_ADDRESS, kS16 };
-  anglePacket.data._s16 = static_cast<int16_t>(angle);
-  lumen_write_packet(&anglePacket);
-}
+    void sendServoPosition(int angle) {
+      lumen_packet_t anglePacket = { CURRENT_ANGLE_ADDRESS, kS16 };
+      anglePacket.data._s16 = static_cast<int16_t>(angle);
+      lumen_write_packet(&anglePacket);
+    }
 
-void updateServoFromPotentiometer() {
-  long potValue = analogRead(ANALOG_PIN);              
-  int servoPosition = map(potValue, 0, 1023, 0, 180);  
+    void updateServoFromPotentiometer() {
+      long potValue = analogRead(ANALOG_PIN);              
+      int servoPosition = map(potValue, 0, 1023, 0, 180);  
 
-  ServoMotor.write(servoPosition);   
-  sendServoPosition(servoPosition);  
+      ServoMotor.write(servoPosition);   
+      sendServoPosition(servoPosition);  
 
-  delay(75);  
-}
+      delay(75);  
+    }
 
-void processDisplayPackets() {
-  if (lumen_available() > 0) {
-    currentPacket = lumen_get_first_packet();
+    void processDisplayPackets() {
+      if (lumen_available() > 0) {
+        currentPacket = lumen_get_first_packet();
 
-    if (currentPacket->address == CONTROL_DEVICE_SELECTOR_ADDRESS) {
-      controlSelect = currentPacket->data._bool;  
-    } else if (currentPacket->address == CURRENT_ANGLE_ADDRESS) {
-      updatePosition = true;
-      positionSetpoint = currentPacket->data._s16;
-      ServoMotor.write(positionSetpoint);
+        if (currentPacket->address == CONTROL_DEVICE_SELECTOR_ADDRESS) {
+          controlSelect = currentPacket->data._bool;  
+        } else if (currentPacket->address == CURRENT_ANGLE_ADDRESS) {
+          updatePosition = true;
+          positionSetpoint = currentPacket->data._s16;
+          ServoMotor.write(positionSetpoint);
 
-      if (updatePosition && basePosition != positionSetpoint) {
-        basePosition = positionSetpoint;
-      } else {
-        updatePosition = false;
+          if (updatePosition && basePosition != positionSetpoint) {
+            basePosition = positionSetpoint;
+          } else {
+            updatePosition = false;
+          }
+        }
       }
     }
-  }
-}
 
-void setup() {
-  Serial.begin(LCM_BAUDRATE);
-  ServoMotor.attach(SERVO_PIN);
-  updatePosition = true;
-}
+    void setup() {
+      Serial.begin(LCM_BAUDRATE);
+      ServoMotor.attach(SERVO_PIN);
+      updatePosition = true;
+    }
 
-void loop() {
-  processDisplayPackets();  
+    void loop() {
+      processDisplayPackets();  
 
-  if (controlSelect) {
-    updateServoFromPotentiometer();
-  }
-}
+      if (controlSelect) {
+        updateServoFromPotentiometer();
+      }
+    }
